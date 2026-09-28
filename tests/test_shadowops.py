@@ -25,6 +25,12 @@ def test_fixtures_are_deterministic_and_labelled(tmp_path: Path) -> None:
     assert truth["data_label"] == DATA_LABEL
     assert len(truth["workflows"]) == 5
     assert all(item["expected_steps"] and item["instances"] >= 2 for item in truth["workflows"])
+    activity_bytes = b"".join(
+        path.read_bytes()
+        for path in sorted(first.rglob("*"))
+        if path.is_file() and path.name != "ground_truth.json"
+    )
+    assert all(item["workflow_id"].encode("utf-8") not in activity_bytes for item in truth["workflows"])
 
 
 def test_ingestion_parses_every_source_and_skips_malformed(tmp_path: Path, caplog) -> None:
@@ -121,4 +127,3 @@ def test_cli_smoke_for_each_subcommand(tmp_path: Path, capsys) -> None:
     assert main(["spec", "top", "--in", str(corpus)]) == 0
     spec_output = json.loads(capsys.readouterr().out)
     assert spec_output["human_checkpoints"]
-

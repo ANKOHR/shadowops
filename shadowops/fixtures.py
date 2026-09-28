@@ -83,9 +83,11 @@ def _records() -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[st
     calendar: list[dict[str, str]] = []
     files: list[dict[str, str]] = []
     exports: list[dict[str, str]] = []
+    case_number = 1
     for workflow in WORKFLOWS:
         for instance in range(3):
-            case_id = f"{workflow['workflow_id']}-{instance + 1:02d}"
+            case_id = f"case-{case_number:03d}"
+            case_number += 1
             for step_index, (action, object_name, channel) in enumerate(workflow["steps"]):
                 common = {
                     "event_id": f"{case_id}-e{step_index + 1}",
@@ -130,7 +132,7 @@ def _records() -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[st
                             "operation_id": common["event_id"],
                             "user": common["actor"],
                             "operation": action,
-                            "path": f"/synthetic/{workflow['workflow_id']}/{object_name.replace(' ', '_')}",
+                            "path": f"/synthetic/cases/{case_id}/{object_name.replace(' ', '_')}",
                             "timestamp": common["timestamp"],
                             "case_ref": case_id,
                             "sensitivity": common["sensitivity"],
@@ -197,4 +199,3 @@ def generate_fixtures(out_dir: str | Path) -> dict[str, Any]:
         "event_count": len(emails) + len(calendar) + len(files) + len(exports),
         "ground_truth": str(root / "ground_truth.json"),
     }
-
